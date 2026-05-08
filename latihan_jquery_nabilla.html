@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blooming Beauty - 12 Products Edition</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Pacifico&display=swap" rel="stylesheet">
+
+    <style>
+        *{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+        body{ background:#fffcfd; color:#444; overflow-x:hidden; }
+        nav{ padding:15px 7%; display:flex; justify-content:space-between; align-items:center; background:white; position:sticky; top:0; z-index:1000; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+        .logo{ font-family:'Pacifico',cursive; font-size:28px; color:#ff77aa; cursor:pointer; }
+        .cart-btn{ background:#ff77aa; color:white; padding:8px 20px; border-radius:20px; cursor:pointer; font-size:14px; }
+        .hero{ padding:80px 7%; display:flex; align-items:center; gap:30px; background:#fff0f6; }
+        .hero-text h1{ font-size:50px; color:#ff77aa; line-height:1.1; }
+        .hero-text button{ margin-top:20px; padding:12px 30px; border:none; background:#ff77aa; color:white; border-radius:25px; cursor:pointer; font-weight:600; }
+        .filter-container { text-align: center; padding: 30px 0; }
+        .filter-btn { padding: 10px 25px; margin: 5px; border-radius: 20px; border: 1px solid #ff77aa; background: white; color: #ff77aa; cursor: pointer; font-weight: 600; }
+        .filter-btn.active { background: #ff77aa; color: white; }
+        .container{ width:86%; margin:auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:25px; padding-bottom: 50px; }
+        .card{ background:white; border-radius:20px; padding:20px; box-shadow:0 5px 15px rgba(0,0,0,0.05); border:1px solid #ffeef5; position:relative; }
+        .card img{ width:100%; border-radius:15px; height:200px; object-fit:cover; }
+        .desc{ display:none; padding:10px 0; font-size:13px; color:#777; }
+        .detail-btn, .buy-btn{ padding:10px; border-radius:10px; border:none; cursor:pointer; font-weight:600; font-size:13px; width:100%; margin-top:10px; }
+        .detail-btn{ background:#ffeef5; color:#ff77aa; }
+        .buy-btn{ background:#ff77aa; color:white; }
+        #cartPanel{ display:none; position:fixed; top:80px; right:7%; width:320px; background:white; padding:20px; border-radius:15px; box-shadow:0 10px 30px rgba(0,0,0,0.1); z-index:1000; }
+        .cart-item-row { display: flex; flex-direction: column; padding: 10px 0; border-bottom: 1px solid #fdf0f5; }
+        .cart-item-info { display: flex; justify-content: space-between; align-items: center; }
+        .btn-remove-item { color: #ff4d4d; cursor: pointer; font-size: 11px; text-decoration: underline; }
+        .cart-total-info { margin-top: 15px; padding-top: 10px; border-top: 2px solid #ff77aa; font-weight: 700; display: flex; justify-content: space-between; color: #ff77aa; }
+        #btnCheckoutAction { width: 100%; background: #28a745; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; margin-top: 15px; font-weight: 600; display: none; }
+        #customModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:3000; justify-content:center; align-items:center; }
+        .modal-content { background:white; padding:30px; border-radius:20px; text-align:center; max-width:400px; width:90%; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .btn-close-modal { background: #ff77aa; color:white; border:none; padding:10px 25px; border-radius:20px; cursor:pointer; margin-top:15px; font-weight:600; }
+        #notif{ display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#ff77aa; color:white; padding:10px 25px; border-radius:50px; z-index:2000; }
+        .interaction-box{ width:86%; margin:50px auto; display:flex; gap:30px; flex-wrap:wrap; }
+        .box-side{ flex:1; min-width:300px; background:white; padding:30px; border-radius:20px; box-shadow:0 5px 15px rgba(0,0,0,0.03); }
+        .qna-item{ border-bottom:1px solid #eee; padding:10px 0; }
+        .q-header{ cursor:pointer; font-weight:600; color:#555; display:flex; justify-content:space-between; }
+        .a-body{ display:none; padding:10px 0; font-size:14px; color:#888; }
+        .input-rev{ width:100%; padding:10px; border:1px solid #ffd6e7; border-radius:10px; margin-top:10px; outline:none; }
+        footer{ text-align:center; padding:40px; background:#ffd6e7; margin-top:50px; color:#7a4d5f; }
+    </style>
+</head>
+<body>
+
+<div id="notif">Item masuk keranjang!</div>
+
+<div id="customModal">
+    <div class="modal-content">
+        <h3>Berhasil!</h3>
+        <p>Pesanan anda berhasil dibuat, selamat menunggu barang!</p>
+        <button class="btn-close-modal">Oke, Sip!</button>
+    </div>
+</div>
+
+<nav>
+    <div class="logo">Blooming Beauty</div>
+    <div class="cart-btn" id="cartToggle"> Cart (<span id="count">0</span>)</div>
+</nav>
+
+<div id="cartPanel">
+    <h4 style="color:#ff77aa">My Cart</h4>
+    <hr style="margin:10px 0; opacity:0.1">
+    <div id="itemList"><p style="font-size:12px; color:#999">Kosong nih..</p></div>
+    <div id="totalSection" style="display:none">
+        <div class="cart-total-info">
+            <span>Total:</span>
+            <span id="totalDisplay">Rp 0</span>
+        </div>
+        <button id="btnCheckoutAction">Checkout Sekarang</button>
+    </div>
+</div>
+
+<header class="hero">
+    <div class="hero-text">
+        <h1>Skin Goals <br>Start Here.</h1>
+        <p>Pilih produk skincare terbaik untuk kulit sehatmu. <br>Latihan JQuery oleh <b>Nabilla</b>.</p>
+        <button id="shopBtn">Gaskeun Belanja</button>
+    </div>
+</header>
+
+<div class="filter-container">
+    <button class="filter-btn active" data-filter="all">Semua</button>
+    <button class="filter-btn" data-filter="serum">Serum</button>
+    <button class="filter-btn" data-filter="wash">Face Wash</button>
+</div>
+
+<div class="container" id="productArea">
+    <div class="card wash"> <img src="images/RoseWaterMist.jpeg" alt="">
+		<h3>Rose Water Mist</h3>
+		<p style="color:#ff77aa; font-weight:700">Rp 115.000</p>
+		<button class="detail-btn">Info Produk</button>
+		<div class="desc">
+        Penyegar wajah alami yang dibuat dari distilasi kelopak bunga mawar murni tanpa tambahan alkohol. Berfungsi untuk menyeimbangkan pH kulit setelah mencuci muka, memberikan hidrasi instan saat cuaca panas, dan bisa digunakan sebagai setting spray agar makeup tahan lebih lama dan terlihat dewy. Diperkaya dengan ekstrak Aloe Vera untuk memberikan efek cooling yang menenangkan kulit sensitif atau kemerahan akibat paparan sinar matahari.</div>
+		<button class="buy-btn" data-name="Rose Water Mist" data-price="115000">Tambah</button>
+	</div>
+    <div class="card serum">
+        <img src="images/GlowBooster1.jpg" alt="">
+        <h3>Glow Booster</h3><p style="color:#ff77aa; font-weight:700">Rp 180.000</p>
+        <button class="detail-btn">Info Produk</button>
+        <div class="desc">Formulasi premium dengan 10% Vitamin C murni dan Ferulic Acid untuk mencerahkan kulit kusam dan menyamarkan noda hitam bekas jerawat. Teksturnya ringan, cepat meresap, dan memberikan efek 'glass skin' alami sejak pemakaian pertama.</div>
+        <button class="buy-btn" data-name="Glow Booster" data-price="180000">Tambah</button>
+    </div>
+    <div class="card wash">
+        <img src="images/PureFoam.jpg" alt="">
+        <h3>Pure Foam</h3><p style="color:#ff77aa; font-weight:700">Rp 75.000</p>
+        <button class="detail-btn">Info Produk</button>
+        <div class="desc">Pembersih wajah dengan pH seimbang (5.5) yang membersihkan debu dan kotoran tanpa membuat kulit terasa tertarik. Mengandung ekstrak Oat dan Chamomile yang berfungsi sebagai anti-inflamasi, menjaga kelembutan kulit wajah sepanjang hari.</div>
+        <button class="buy-btn" data-name="Pure Foam" data-price="75000">Tambah</button>
+    </div>
+    <div class="card serum">
+        <img src="images/RetinolNight.jpg" alt="">
+        <h3>Retinol Night</h3><p style="color:#ff77aa; font-weight:700">Rp 210.000</p>
+        <button class="detail-btn">Info Produk</button>
+        <div class="desc">Serum malam dengan teknologi Encapsulated Retinol yang efektif merangsang kolagen dan menyamarkan garis halus tanpa menyebabkan iritasi. Ditambah dengan Ceramide untuk menjaga elastisitas kulit dan mempercepat regenerasi sel saat lo tidur.</div>
+        <button class="buy-btn" data-name="Retinol Night" data-price="210000">Tambah</button>
+    </div>
+    <div class="card wash">
+        <img src="images/AcneClear.jpeg" alt="">
+        <h3>Acne Clear</h3><p style="color:#ff77aa; font-weight:700">Rp 89.000</p>
+        <button class="detail-btn">Info Produk</button>
+        <div class="desc">Face wash khusus kulit berjerawat yang mengandung Salicylic Acid (BHA) untuk membersihkan pori-pori tersumbat. Diperkaya dengan Tea Tree Oil sebagai antiseptik alami yang mampu meredakan peradangan jerawat hanya dalam waktu 3 hari.</div>
+        <button class="buy-btn" data-name="Acne Clear" data-price="89000">Tambah</button>
+    </div>
+    <div class="card serum">
+        <img src="images/BHAExfo.jpeg" alt="">
+        <h3>BHA Exfo</h3><p style="color:#ff77aa; font-weight:700">Rp 125.000</p>
+        <button class="detail-btn">Info Produk</button>
+        <div class="desc">Cairan eksfoliasi kimiawi dengan 2% Salicylic Acid yang efektif mengangkat sel kulit mati dan komedo membandel. Penggunaan rutin akan membuat tekstur kulit lebih halus, pori-pori tampak lebih kecil, dan mencegah munculnya jerawat baru.</div>
+        <button class="buy-btn" data-name="BHA Exfo" data-price="125000">Tambah</button>
+    </div>
+    <div class="card wash">
+        <img src="images/DeepCleanse.jpeg" alt="">
+        <h3>Deep Cleanse</h3><p style="color:#ff77aa; font-weight:700">Rp 95.000</p>
+        <button class="detail-btn">Info Produk</button>
+        <div class="desc">MPembersih wajah deep-cleansing dengan teknologi micellar yang mampu mengangkat sisa makeup waterproof dan polusi udara. Mengandung Charcoal aktif untuk mendetoksifikasi kulit dari racun dan mengontrol minyak berlebih tanpa merusak kelembapan alami.</div>
+        <button class="buy-btn" data-name="Deep Cleanse" data-price="95000">Tambah</button>
+    </div>
+    <div class="card serum">
+        <img src="images/CalmingDrop.jpg" alt="">
+        <h3>Calming Drop</h3><p style="color:#ff77aa; font-weight:700">Rp 135.000</p>
+        <button class="detail-btn">Info Produk</button>
+        <div class="desc">Serum penyelamat untuk kulit yang sedang iritasi, gatal, atau mengalami breakout parah. Mengandung 80% Centella Asiatica dan Mugwort yang bekerja cepat menenangkan kulit, mengurangi inflamasi, dan memberikan rasa sejuk seketika.</div>
+        <button class="buy-btn" data-name="Calming Drop" data-price="135000">Tambah</button>
+    </div>
+    <div class="card serum">
+        <img src="images/BarrierFix.jpg" alt="">
+        <h3>Barrier Fix</h3><p style="color:#ff77aa; font-weight:700">Rp 195.000</p>
+        <button class="detail-btn">Info Produk</button>
+        <div class="desc">Konsentrat khusus untuk memperbaiki skin barrier yang rusak akibat over-exfoliation atau paparan sinar UV. Kandungan 5 jenis Ceramide dan Squalane-nya menciptakan lapisan pelindung transparan yang menjaga kulit tetap sehat, kenyal, dan bercahaya.</div>
+        <button class="buy-btn" data-name="Barrier Fix" data-price="195000">Tambah</button>
+    </div>
+    <div class="card wash">
+        <img src="images/BrightWash.jpg" alt="">
+        <h3>Bright Wash</h3><p style="color:#ff77aa; font-weight:700">Rp 82.000</p>
+        <button class="detail-btn">Info Produk</button>
+        <div class="desc">Sabun cuci muka pencerah dengan butiran lembut scrub alami dan Niacinamide. Efektif meratakan warna kulit yang belang akibat sinar matahari dan memberikan sensasi segar yang membangkitkan energi di pagi hari.</div>
+        <button class="buy-btn" data-name="Bright Wash" data-price="82000">Tambah</button>
+    </div>
+    <div class="card wash">
+        <img src="images/GentleJelly.png" alt="">
+        <h3>Gentle Jelly</h3><p style="color:#ff77aa; font-weight:700">Rp 99.000</p>
+        <button class="detail-btn">Info Produk</button>
+        <div class="desc">Pembersih wajah unik bertekstur jelly transparan yang sangat lembut di kulit. Tanpa kandungan SLS (sabun) dan pewangi tambahan, menjadikannya pilihan paling aman untuk penderita eczema atau kulit yang sangat sensitif dan reaktif.</div>
+        <button class="buy-btn" data-name="Gentle Jelly" data-price="99000">Tambah</button>
+    </div>
+    <div class="card serum">
+        <img src="images/AntiAging.png" alt="">
+        <h3>Anti Aging</h3><p style="color:#ff77aa; font-weight:700">Rp 250.000</p>
+        <button class="detail-btn">Info Produk</button>
+        <div class="desc">Serum mewah dengan kandungan Peptide Complex dan Marine Collagen untuk mengencangkan kulit yang mulai kendur. Bekerja aktif menyamarkan kerutan di area mata dan dahi, memberikan efek lifting agar wajah tampak jauh lebih muda dan segar.</div>
+        <button class="buy-btn" data-name="Anti Aging" data-price="250000">Tambah</button>
+    </div>
+</div>
+
+<div class="interaction-box">
+    <div class="box-side">
+        <h3 style="margin-bottom:20px; color:#ff77aa">Banyak Ditanya (Q&A)</h3>
+        <div class="qna-item"><div class="q-header">Produknya aman bumil? <span>+</span></div><div class="a-body">Aman banget sist! Kita udah BPOM dan tanpa bahan kimia keras.</div></div>
+        <div class="qna-item"><div class="q-header">Pengiriman berapa lama? <span>+</span></div><div class="a-body">Cek out sebelum jam 3 sore bakal dikirim hari yang sama ya!</div></div>
+        <div class="qna-item"><div class="q-header">Ada garansi pecah? <span>+</span></div><div class="a-body">Ada dong, asal ada video unboxing pas paket dibuka.</div></div>
+        <div class="qna-item"><div class="q-header">Bisa bayar COD? <span>+</span></div><div class="a-body">Bisa banget! Pilih metode pembayaran di tempat saat checkout.</div></div>
+        <div class="qna-item"><div class="q-header">Apakah cocok untuk kulit sensitif? <span>+</span></div><div class="a-body">Tentu, produk kami sudah dermatologist tested dan hypoallergenic.</div></div>
+    </div>
+    <div class="box-side">
+        <h3 style="color:#ff77aa">Review Customer</h3>
+        <input type="text" id="inputUser" class="input-rev" placeholder="Nama kamu...">
+        <textarea id="inputReview" class="input-rev" placeholder="Tulis review singkat..."></textarea>
+        <button class="buy-btn" id="postReview">Kirim Review</button>
+        <div id="reviewList"><div class="rev-item"><b>Nabila:</b> Serumnya mantul, seminggu langsung glowing!</div></div>
+    </div>
+</div>
+
+<footer><p><b>Latihan JQuery Nabilla</b> - Informatics Engineering PNJ</p></footer>
+
+<script>
+$(document).ready(function(){
+    let count = 0, totalPrice = 0;
+    function formatRupiah(n) { return "Rp " + n.toLocaleString('id-ID'); }
+
+    $(".filter-btn").click(function(){
+        $(".filter-btn").removeClass("active"); $(this).addClass("active");
+        let cat = $(this).data("filter");
+        cat == "all" ? $(".card").fadeIn() : ($(".card").hide(), $(".card."+cat).fadeIn());
+    });
+
+    $(".detail-btn").click(function(){ $(this).next(".desc").slideToggle(300); $(this).text($(this).text() == "Info Produk" ? "Tutup Detail" : "Info Produk"); });
+    $(".q-header").click(function(){ $(this).next(".a-body").slideToggle(200); $(this).parent().siblings().find(".a-body").slideUp(); });
+    $("#cartToggle").click(function(){ $("#cartPanel").slideToggle("fast"); });
+    $("#shopBtn").click(function(){ $('html, body').animate({ scrollTop: $("#productArea").offset().top - 80 }, 800); });
+
+    $(".buy-btn").on('click', function(){
+        if($(this).attr('id') == "postReview") return;
+        let n = $(this).data("name"), p = parseInt($(this).data("price"));
+        count++; totalPrice += p;
+        $("#count").text(count); $("#totalDisplay").text(formatRupiah(totalPrice));
+        if(count == 1) $("#itemList").empty();
+        $("#totalSection, #btnCheckoutAction").show();
+        $("#itemList").append(`<div class="cart-item-row" data-price="${p}"><div class="cart-item-info"><span>${n}</span><b>${formatRupiah(p)}</b></div><span class="btn-remove-item">Hapus</span></div>`);
+        $("#notif").stop(true, true).fadeIn(200).css("bottom", "10px").animate({ bottom: "40px" }, 400).delay(1000).fadeOut(400);
+    });
+
+    $(document).on('click', '.btn-remove-item', function(){
+        let p = $(this).closest('.cart-item-row').data('price');
+        totalPrice -= p; count--;
+        $(this).closest('.cart-item-row').remove();
+        $("#count").text(count); $("#totalDisplay").text(formatRupiah(totalPrice));
+        if(count == 0) { $("#itemList").html('<p style="font-size:12px; color:#999">Kosong nih..</p>'); $("#totalSection").hide(); }
+    });
+
+    $("#btnCheckoutAction").click(function(){ $("#customModal").css("display", "flex"); count = 0; totalPrice = 0; $("#count").text(0); $("#totalSection").hide(); $("#itemList").html('<p style="font-size:12px; color:#999">Kosong nih..</p>'); });
+    $(".btn-close-modal").click(function(){ $("#customModal").hide(); $("#cartPanel").slideUp(); });
+
+    $("#postReview").click(function(){
+        let u = $("#inputUser").val(), r = $("#inputReview").val();
+        if(u && r){ $("#reviewList").prepend(`<div class="rev-item" style="display:none"><b>${u}:</b> ${r}</div>`); $(".rev-item").first().fadeIn(1000); $("#inputUser, #inputReview").val(""); }
+    });
+});
+</script>
+</body>
+</html>
